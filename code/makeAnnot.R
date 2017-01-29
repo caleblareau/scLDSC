@@ -11,8 +11,8 @@ BiocParallel::register(BiocParallel::MulticoreParam(2, progressbar = FALSE))
 if (basename(getwd()) != "code") setwd("code")
 
 # Load human heme
-load("/Volumes/dat/Research/BuenrostroResearch/hemeGWASanno/output/peaksCounts.rda")
-types <- readRDS("/Volumes/dat/Research/BuenrostroResearch/hemeGWASanno/output/sampleTypes.rds")
+load("/data/aryee/caleb/ldsc/hemeBulk/peaksCounts.rda")
+types <- readRDS("/data/aryee/caleb/ldsc/hemeBulk/sampleTypes.rds")
 sample_annotation <- DataFrame(type = types)
 hemese <- SummarizedExperiment(assays = list(counts = Matrix(counts)), rowRanges = peaks, colData = sample_annotation)
 
@@ -33,17 +33,20 @@ makeAnnotFile <- function(chr, outname, se, mincounts = 1){
   
   # Boolean Matrix 
   booCountsMat <- counts[ov$queryHits,] >= mincounts
+ 
   applyOut <- sapply(1:dim(booCountsMat)[2], function(i){
      as.numeric(1:dim(df)[1] %in% ov$subjectHits[booCountsMat[i,]])
   })
   
   dat <- data.frame(df, applyOut)
   names(dat) <- c(colnames(df), dimnames(counts)[[2]])
-  
-  gz1 <- gzfile(paste0(outname, as.character(chr), ".annot.gz"), "w")
-  write.table(dat, file = gz1, row.names = FALSE, col.names = TRUE, sep = "\t")
+
+  gz1 <- gzfile(paste0("/data/aryee/caleb/ldsc/hemeBulk/", outname, as.character(chr), ".annot.gz"), "w")
+  write.table(dat, file = gz1, row.names = FALSE, col.names = TRUE, sep = " ", quote = FALSE)
   close(gz1)
   return(chr)
 }
 
-makeAnnotFile(21, "heme", hemese)
+sapply(1:22, function(i){
+	makeAnnotFile(i, "heme", hemese)
+})
