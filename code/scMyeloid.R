@@ -6,16 +6,12 @@ library(data.table)
 library(SummarizedExperiment)
 library(Matrix)
 library(diffloop)
-BiocParallel::register(BiocParallel::MulticoreParam(2, progressbar = FALSE))
+BiocParallel::register(BiocParallel::MulticoreParam(8, progressbar = FALSE))
 
 if (basename(getwd()) != "code") setwd("code")
 
 # Load human heme
-load("/data/aryee/caleb/ldsc/hemeBulk/peaksCounts.rda")
-types <- readRDS("/data/aryee/caleb/ldsc/hemeBulk/sampleTypes.rds")
-sample_annotation <- DataFrame(type = types)
-hemese <- SummarizedExperiment(assays = list(counts = Matrix(counts)), rowRanges = peaks, colData = sample_annotation)
-
+load("/data/aryee/caleb/ldsc/scMyeloid/rawEverything.rda")
 
 makeAnnotFile <- function(chr, outname, se, mincounts = 1){
 
@@ -41,12 +37,12 @@ makeAnnotFile <- function(chr, outname, se, mincounts = 1){
   dat <- data.frame(df, applyOut)
   names(dat) <- c(colnames(df), dimnames(counts)[[2]])
 
-  gz1 <- gzfile(paste0("/data/aryee/caleb/ldsc/hemeBulk/", outname, as.character(chr), ".annot.gz"), "w")
+  gz1 <- gzfile(paste0("/data/aryee/caleb/ldsc/scMyeloid/", outname, as.character(chr), ".annot.gz"), "w")
   write.table(dat, file = gz1, row.names = FALSE, col.names = TRUE, sep = " ", quote = FALSE)
   close(gz1)
   return(chr)
 }
 
-sapply(1:22, function(i){
-	makeAnnotFile(i, "heme", hemese)
+BiocParallel::bplapply(1:22, function(i){
+	makeAnnotFile(i, "scHeme", se)
 })
