@@ -12,6 +12,7 @@ if (basename(getwd()) != "code") setwd("code")
 
 # Load human heme
 load("/data/aryee/caleb/ldsc/scMyeloid/rawEverything.rda")
+ps <-read.table("/data/aryee/caleb/ldsc/scMyeloid/22jan2017_myel_pseudotime.txt")
 
 makeAnnotFile <- function(chr, outname, se, mincounts = 1){
 
@@ -43,6 +44,13 @@ makeAnnotFile <- function(chr, outname, se, mincounts = 1){
   return(chr)
 }
 
+
+#sapply(1:22, function(i){
+#	makeAnnotFile(i, "scHeme", se)
+#})
+
+sc <- se[,which(se@colData@listData$name %in% ps[,1])]
+
 BiocParallel::bplapply(1:22, function(i){
-	makeAnnotFile(i, "scHeme", se)
+	makeAnnotFile(i, "scHeme", sc)
 })
