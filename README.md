@@ -10,3 +10,9 @@ python ldsc.py --l2 --bfile 1000G_EUR_Phase3_plink/1000G.EUR.QC.22 --ld-wind-cm 
 
 python ldsc.py --h2 sumstats/BMI.sumstats.gz --ref-ld-chr hemeBulk/heme --overlap-annot --w-ld-chr weights_hm3_no_hla/weights. --frqfile-chr 1000G_Phase3_frq/1000G.EUR.QC. --out BMI_baseline
 ```
+
+
+## Single Cells:
+```
+bsub -q big -M 64000 -R 'rusage[mem=64000]' python ldsc.py --h2 sumstats/BMI.sumstats.gz --ref-ld-chr scMyeloid/scHeme --overlap-annot --w-ld-chr weights_hm3_no_hla/weights. --frqfile-chr 1000G_Phase3_frq/1000G.EUR.QC. --out scMyeloid/BMI
+```
