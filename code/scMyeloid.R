@@ -6,9 +6,11 @@ library(data.table)
 library(SummarizedExperiment)
 library(Matrix)
 library(diffloop)
-BiocParallel::register(BiocParallel::MulticoreParam(8, progressbar = FALSE))
+BiocParallel::register(BiocParallel::MulticoreParam(4, progressbar = FALSE))
 
 if (basename(getwd()) != "code") setwd("code")
+
+pad <- 10000
 
 # Load human heme
 load("/data/aryee/caleb/ldsc/scMyeloid/rawEverything.rda")
@@ -23,8 +25,8 @@ makeAnnotFile <- function(chr, outname, se, mincounts = 1){
   gdf <- makeGRangesFromDataFrame(data.frame(chr = df$CHR, start = df$BP, end = df$BP))
   
   # Deal with SE oject
-  boo <- which(as.character(seqnames(rmchr(rowRanges(se)))) == chr)
-  rr <- rmchr(rowRanges(se)[boo])
+  boo <- which(as.character(seqnames(rmchr(rowRanges(se)))) == as.character(chr))
+  rr <- padGRanges(rmchr(rowRanges(se)[boo]), pad = pad)
   counts <- assays(se)[["counts"]][boo,]
   ov <- data.frame(findOverlaps(rr, gdf))
   
@@ -36,9 +38,9 @@ makeAnnotFile <- function(chr, outname, se, mincounts = 1){
   })
   
   dat <- data.frame(df, applyOut)
-  names(dat) <- c(colnames(df), dimnames(counts)[[2]])
+  names(dat) <- c(colnames(df), as.character(se@colData@listData$name))
 
-  gz1 <- gzfile(paste0("/data/aryee/caleb/ldsc/scMyeloid/", outname, as.character(chr), ".annot.gz"), "w")
+  gz1 <- gzfile(paste0("/data/aryee/caleb/ldsc/scMyeloid/", outname, "_", as.character(pad),"pad_",as.character(chr), ".annot.gz"), "w")
   write.table(dat, file = gz1, row.names = FALSE, col.names = TRUE, sep = " ", quote = FALSE)
   close(gz1)
   return(chr)
